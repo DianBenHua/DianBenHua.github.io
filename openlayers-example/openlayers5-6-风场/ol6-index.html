@@ -4,7 +4,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta charset="UTF-8">
 	<title>openlayers6-风场图</title>
-	<link rel="stylesheet" href="v6.x.x-dist/ol.css">
+	<link rel="stylesheet" href="../../common/openlayers/v6.x.x-dist/ol.css">
 	<link rel="stylesheet" href="css/dat.gui.css">
 	<style type="text/css">
 		html, body, .container {
@@ -33,12 +33,12 @@
 			<div id="map"></div>
 		</div>
 	</body>
-	<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+	<script type="text/javascript" src="../../common/js/jquery-1.11.2.min.js"></script>
 	<script type="text/javascript" src="js/dat.gui.js"></script>
 	<!-- 因 ol6 重构原因，无法直接使用ol6的版本、下面这个内容是从https://cdn.jsdelivr.net/npm/@sakitam-gis/ol6@6.3.3/dist/下载的、ol-wind提供的 -->
-	<script type="text/javascript" src="v6.x.x-dist/ol.js"></script>
+	<script type="text/javascript" src="../../common/openlayers/v6.x.x-dist/ol.js"></script>
 	<!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/ol-wind/dist/ol-wind.js"></script> -->
-	<script type="text/javascript" src="v6.x.x-dist/ol-wind.js"></script>
+	<script type="text/javascript" src="../../common/openlayers/v6.x.x-dist/ol-wind.js"></script>
 	<script type="text/javascript">
 		var map;
 		$(document).ready(function (){
@@ -56,7 +56,7 @@
 				source: new ol.source.XYZ({
 					url: "http://t0.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=e83d04f3e04272b8d9e91615e309fe36",
 					wrapX: false,
-					crossOrigin: 'anonymous'
+					//crossOrigin: 'anonymous'
 				})
 			});
 			var TiandiMap_cva = new ol.layer.Tile({
@@ -64,7 +64,7 @@
 				source: new ol.source.XYZ({
 					url: "http://t0.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=e83d04f3e04272b8d9e91615e309fe36",
 					wrapX: false,
-					crossOrigin: 'anonymous'
+					//crossOrigin: 'anonymous'
 				})
 			})
 

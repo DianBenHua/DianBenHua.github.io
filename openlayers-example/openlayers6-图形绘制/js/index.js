@@ -8,7 +8,7 @@ $(document).ready(function (){
         source: new ol.source.XYZ({
             url: "http://t0.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=e83d04f3e04272b8d9e91615e309fe36",
             wrapX: false,
-			crossOrigin: "Anonymous"
+			//crossOrigin: "Anonymous"
         })
     });
     var TiandiMap_cva = new ol.layer.Tile({
@@ -16,7 +16,7 @@ $(document).ready(function (){
         source: new ol.source.XYZ({
             url: "http://t0.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=e83d04f3e04272b8d9e91615e309fe36",
             wrapX: false,
-			crossOrigin: "Anonymous"
+			//crossOrigin: "Anonymous"
         })
     })
 
