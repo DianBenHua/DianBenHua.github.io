@@ -25,7 +25,8 @@
                 layerType: Zondy.Enum.Map.TiandituType.VEC,
                 projection: ol.proj.get('EPSG:4326'),
                 // 天地图key
-                token: "e83d04f3e04272b8d9e91615e309fe36"
+                token: "e83d04f3e04272b8d9e91615e309fe36",
+				crossOrigin: 'anonymous'
             });
             // 初始化地图容器
             map = new ol.Map({
