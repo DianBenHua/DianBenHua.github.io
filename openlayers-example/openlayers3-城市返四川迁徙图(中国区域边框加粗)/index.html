@@ -16,7 +16,7 @@
     <script src="js/echarts.min.js" type="text/javascript"></script>
 	<script src="js/openlayers_echart.es5.js"></script>
 	<!-- 城市经纬度、迁徙数据 -->
-	<script src="JS/data.js"></script>
+	<script src="js/data.js"></script>
 	<script type="text/javascript">
 		var map;
 	
@@ -56,7 +56,7 @@
 			// 显示中国区域
 			displayChina();
 			
-			// 初始化GDP图表
+			// 初始化迁徙图
             initCharts();
 		});
 		
@@ -126,7 +126,7 @@
             }, function (){});
         }
 		
-		/** 初始化GDP图表 */
+		/** 初始化迁徙图 */
 		function initCharts() {
 			var legendData = [];
 			var color = ['#FF0000', '#66FFFF', '#3399FF', '#CC33FF'];
