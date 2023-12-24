@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta charset="UTF-8">
+	<title>openlayers5-风场图</title>
+	<link rel="stylesheet" href="v5.3.0-dist/ol.css">
+	<link rel="stylesheet" href="css/dat.gui.css">
+	<style type="text/css">
+		html, body, .container {
+			padding: 0;
+			margin: 0;
+			height: 100%;
+			width: 100%
+		}
+
+		.container {
+			display: flex;
+			justify-content: center; /* 水平居中 */
+			align-items: center;
+		}
+
+		#map {
+			padding: 0;
+			margin: 0;
+			height: 100%;
+			width: 100%;
+		}
+	</style>
+</head>
+	<body>
+		<div class="container">
+			<div id="map"></div>
+		</div>
+	</body>
+	<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+	<script type="text/javascript" src="js/dat.gui.js"></script>
+	<script type="text/javascript" src="v5.3.0-dist/ol.js"></script>
+	<!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/ol5-wind/dist/ol-wind.js"></script> -->
+	<script type="text/javascript" src="v5.3.0-dist/ol-wind.js"></script>
+	<script type="text/javascript">
+		var map;
+		$(document).ready(function (){
+			// 初始化地图
+			initMap();
+		
+			// 绘制风场
+			drawWind();
+		});
+		
+		/* 初始化地图 */
+		function initMap() {
+			var TiandiMap_vec = new ol.layer.Tile({
+				title: "天地图矢量图层",
+				source: new ol.source.XYZ({
+					url: "http://t0.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=e83d04f3e04272b8d9e91615e309fe36",
+					wrapX: false
+				})
+			});
+			var TiandiMap_cva = new ol.layer.Tile({
+				title: "天地图矢量注记图层",
+				source: new ol.source.XYZ({
+					url: "http://t0.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=e83d04f3e04272b8d9e91615e309fe36",
+					wrapX: false
+				})
+			})
+
+			//实例化Map对象加载地图
+			map = new ol.Map({
+				//地图容器div的ID
+				target: 'map',
+				//地图容器中加载的图层
+				layers: [TiandiMap_vec, TiandiMap_cva],
+				//地图视图设置
+				view: new ol.View({
+					//地图初始中心点
+					center: [105.066677, 31.657483],
+					//地图初始显示级别
+					zoom: 8,
+					projection: "EPSG:4326"
+				})
+			});
+		}
+		
+		function initGui(windLayer) {
+			// 右上角工具配置
+			const config = {
+				addLayer: true,
+				paths: 1000,
+				lineWidth: 3,
+				velocityScale: 0.005,
+				globalAlpha: 0.8,
+				maxAge: 90,
+			};
+
+			// @ts-ignore
+			const gui = new dat.GUI();
+			gui.add(config, 'addLayer').onChange(function() {
+				if (config.addLayer) {
+					// @ts-ignore
+					window.map.addLayer(windLayer);
+				} else {
+					// @ts-ignore
+					window.map.removeLayer(windLayer);
+				}
+			});
+			gui.add(config, 'globalAlpha', 0.01, 1).onChange(function() {
+				windLayer.setWindOptions({
+					globalAlpha: config.globalAlpha,
+				});
+			});
+			gui.add(config, 'maxAge', 1, 200).onChange(function() {
+				windLayer.setWindOptions({
+					maxAge: config.maxAge,
+				});
+			});
+
+			gui.add(config, 'paths', 500, 8000).onChange(function() {
+				windLayer.setWindOptions({
+					paths: config.paths,
+				});
+			});
+
+			gui.add(config, 'lineWidth', 1, 10).onChange(function() {
+				windLayer.setWindOptions({
+					lineWidth: config.lineWidth,
+				});
+			});
+
+			gui.add(config, 'velocityScale', 0.001, 0.1).onChange(function() {
+				windLayer.setWindOptions({
+					velocityScale: config.velocityScale,
+				});
+			});
+		}
+		
+		function drawWind(){
+			// https://sakitam-1255686840.cos.ap-beijing.myqcloud.com/public/codepen/json/out.json
+			// 使用本地路径、需要把该案例放在tomcat等容器里面
+			fetch('json/out.json').then(res =>res.json()).then(res =>{
+				const windLayer = new OlWind.WindLayer(res, {
+					wrapX: true,
+					forceRender: false,
+					windOptions: {
+						/* 粒子颜色配置 */
+						colorScale: ["rgb(36,104, 180)", "rgb(60,157, 194)", "rgb(128,205,193 )", "rgb(151,218,168 )", "rgb(198,231,181)", "rgb(238,247,217)", "rgb(255,238,159)", "rgb(252,217,125)", "rgb(255,182,100)", "rgb(252,150,75)", "rgb(250,112,52)", "rgb(245,64,32)", "rgb(237,45,28)", "rgb(220,24,32)", "rgb(180,0,35)"],
+						/*colorScale: (speed) => {
+							speed = parseInt(speed);
+							return speed > 15? "red" : "blue";
+						},*/
+						// 速度级别 默认1/25
+						velocityScale: 1 / 100,
+						// 粒子路径能够生成的最大帧数 默认90
+						maxAge: 60,
+						// 帧率(ms) 默认20
+						frameRate: 20,
+						// 粒子路径拖尾效果 默认值0.9
+						globalAlpha: 0.9,
+						/* 粒子路径宽度 默认值1 */
+						//lineWidth: 1,
+						lineWidth: (speed) => {
+							speed = parseInt(speed);
+							return speed > 15? 1 : 2;
+						},
+						/* 粒子路径数量 默认值800*/
+						paths: 800,
+						/*paths: (speed) => {
+							speed = parseInt(speed);
+							return speed > 15? 1 : 1000;
+						}*/
+					},
+					map: map
+				});
+
+				initGui(windLayer);
+			});
+		}
+	</script>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<title>openlayers-城市返四川迁徙图(中国区域边框加粗)</title>
+        <link href="v3.19.1-dist/ol.css" rel="stylesheet" type="text/css" />
+	</head>
+	<body>
+		<!-- 地图容器 -->
+        <div id="mapCon" style="height: 95%;"></div>
+	</body>
+	<script src="js/jquery-1.11.2.min.js" type="text/javascript"></script>
+	<script src="v3.19.1-dist/ol-debug.js" type="text/javascript"></script>
+	<script src="js/zondyClient.js" type="text/javascript"></script>
+    <script src="js/echarts.min.js" type="text/javascript"></script>
+	<script src="js/openlayers_echart.es5.js"></script>
+	<!-- 城市经纬度、迁徙数据 -->
+	<script src="JS/data.js"></script>
+	<script type="text/javascript">
+		var map;
+	
+		$(document).ready(function (){
+			// 初始化天地图图层
+			var layer1 = new Zondy.Map.TianDiTu({
+				layerType: Zondy.Enum.Map.TiandituType.VEC,
+				projection: ol.proj.get('EPSG:4326'),
+				// 天地图key
+				token: "e83d04f3e04272b8d9e91615e309fe36"
+			});
+			var layer2 = new Zondy.Map.TianDiTu({
+				layerType: Zondy.Enum.Map.TiandituType.CVA,
+				projection: ol.proj.get('EPSG:4326'),
+				// 天地图key
+				token: "e83d04f3e04272b8d9e91615e309fe36"
+			});
+
+			// 初始化地图容器
+			map = new ol.Map({
+				target: 'mapCon',
+				layers: [layer1, layer2],
+				view: new ol.View({
+					center: [109.05167, 31.78305],// 地图中心点(天地图里面的经纬度)
+					zoom: 5,
+					minZoom: 5,// 最大缩放级别
+					maxZoom: 5,// 最小缩放级别
+					projection: "EPSG:4326"
+				})
+			});
+			
+			// 禁止鼠标拖动
+			disabledMove();
+				
+			// 显示中国区域
+			displayChina();
+			
+			// 初始化GDP图表
+            initCharts();
+		});
+		
+		/** 禁止鼠标拖动 */
+        function disabledMove(){
+            let pan = getFun();
+            pan.setActive(false);
+            function getFun() {
+                let pan;
+                map.getInteractions().forEach(function(element, index, array) {
+                    if(element instanceof ol.interaction.DragPan) {
+                        pan = element;
+                    }
+                })
+                return pan;
+            }
+        }
+        
+        /** 显示中国区域 */
+        function displayChina(){
+            var queryStruct = new Zondy.Service.QueryFeatureStruct();
+            //是否包含几何图形信息
+            queryStruct.IncludeGeometry = true;
+            //是否包含属性信息
+            queryStruct.IncludeAttribute = true;
+            //是否包含图形显示参数
+            queryStruct.IncludeWebGraphic = false;
+            var queryParam = new Zondy.Service.QueryByLayerParameter("gdbp://MapGisLocal/OpenLayerVecterMap/ds/世界地图经纬度/sfcls/世界政区", {
+                resultFormat: "json",
+                struct: queryStruct
+            });
+            //设置查询分页号
+            queryParam.pageIndex = 0;
+            //设置查询要素数目
+            queryParam.recordNumber = 20;
+            //设置属性条件
+            queryParam.where = "name='中国'";
+            //实例化地图文档查询服务对象
+            var queryService = new Zondy.Service.QueryLayerFeature(queryParam, {
+                ip: "develop.smaryun.com",
+                port: "6163"
+            });
+            queryService.query(function(result){
+                //初始化Zondy.Format.PolygonJSON类
+                var format = new Zondy.Format.PolygonJSON();
+                //将MapGIS要素JSON反序列化为ol.Feature类型数组
+                var features = format.read(result);
+
+                //实例化一个矢量图层drawLayerr用于高亮显示结果
+                var drawSource = new ol.source.Vector({
+                    //是否在地图水平坐标轴上重复
+                    wrapX: false
+                });
+                drawSource.addFeatures(features);
+                drawLayer = new ol.layer.Vector({
+                    source: drawSource,
+                    style: new ol.style.Style({
+                        //边线样式
+                        stroke: new ol.style.Stroke({
+                            color: 'blue',
+                            width: 3
+                        })
+                    })
+                });
+
+                map.addLayer(drawLayer);
+            }, function (){});
+        }
+		
+		/** 初始化GDP图表 */
+		function initCharts() {
+			var legendData = [];
+			var color = ['#FF0000', '#66FFFF', '#3399FF', '#CC33FF'];
+			var series = [];
+			[['北京', BJData], ['上海', SHData], ['广州', GZData], ['拉萨', LSData]].forEach(function (item, i) {
+				var name = item[0] + '-返四川';
+				legendData.push(name);
+				series.push(
+				{
+					// 出发点的特效
+					name: name,
+					type: 'effectScatter',
+					zlevel: 2,
+					rippleEffect: {
+						brushType: 'stroke'
+					},
+					label: {
+						normal: {
+							show: true,
+							position: 'right',
+							formatter: '{b}'
+						}
+					},
+					symbolSize: function (val) {
+						return val[2];
+					},
+					itemStyle: {
+						normal: {
+							color: color[i]
+						}
+					},
+					data: [{
+						name: item[0],
+						value: ol.proj.transform(cityLngLatDataMap[item[0]],"EPSG:4326", "EPSG:4326").concat(10)
+					}]
+				},{
+					// 小图标屁股冒烟的特效
+					name: name,
+					type: 'lines',
+					zlevel: 1,
+					effect: {
+						show: true,
+						// 冒烟跑的速度(值越小越快)
+						period: 5,
+						// 屁股冒烟的长度
+						trailLength: 0.5,
+						// 冒什么颜色的烟
+						color: 'red',
+						// 冒好粗的烟
+						symbolSize: 3
+					},
+					lineStyle: {
+						normal: {
+							color: color[i],
+							width: 0,
+							curveness: 0.2
+						}
+					},
+					data: convertData(item[1])
+				},
+				{
+					// 小图标的特效
+					name: name,
+					type: 'lines',
+					zlevel: 2,
+					effect: {
+						show: true,
+						period: 5,
+						trailLength: 0,
+						// symbol还可以指定图片路径 格式如:'image://图片地址'
+						symbol: 'path://M250 150 L150 350 L350 350 Z', 
+						symbolSize: 15
+					},
+					lineStyle: {
+						normal: {
+							color: color[i],
+							width: 1,
+							opacity: 0.4,
+							curveness: 0.2
+						}
+					},
+					data: convertData(item[1])
+				},
+				{
+					// 到达点的特效
+					name: name,
+					type: 'effectScatter',
+					zlevel: 2,
+					rippleEffect: {
+						brushType: 'stroke'
+					},
+					label: {
+						normal: {
+							show: true,
+							position: 'right',
+							formatter: '{b}'
+						}
+					},
+					symbolSize: function (val) {
+						return val[2];
+					},
+					itemStyle: {
+						normal: {
+							color: color[i]
+						}
+					},
+					data: item[1].map(function (dataItem) {
+						return {
+							name: dataItem[1].name,
+							value: ol.proj.transform(cityLngLatDataMap[dataItem[1].name],"EPSG:4326", "EPSG:4326").concat([dataItem[1].value])
+						};
+					})
+				});
+			});
+
+			var option = {
+				tooltip : {
+					trigger: 'item'
+				},
+				legend: {
+					orient: 'vertical',
+					top: 'bottom',
+					left: 'left',
+					data: legendData,
+					textStyle: {
+						// 字体颜色 默认:#fff
+						color: '#000000',
+						// 字体粗细 默认:normal
+						fontWeight: 'bolder'
+					},
+					// 单选、注释下面配置则默认为全选
+					//selectedMode: 'single'
+				},
+				series: series
+			};
+			var oe= new ADLayer(option,map,echarts) 
+			oe.render()
+		}
+		
+		var convertData = function (data) {
+			var res = [];
+			for (var i = 0; i < data.length; i++) {
+				var dataItem = data[i];
+				var fromCoord = ol.proj.transform(cityLngLatDataMap[dataItem[0].name], "EPSG:4326", "EPSG:4326");
+				var toCoord = ol.proj.transform(cityLngLatDataMap[dataItem[1].name], "EPSG:4326", "EPSG:4326");
+				if (fromCoord && toCoord) {
+					res.push([{
+						coord: fromCoord
+					}, {
+						coord: toCoord
+					}]);
+				}
+			}
+			return res;
+		};
+	
+	</script>
+</html>

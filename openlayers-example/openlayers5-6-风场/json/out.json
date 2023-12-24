@@ -1,0 +1,24 @@
+[
+    {
+        "header": {
+            "parameterCategory": 2, 
+            "parameterNumber": 2, 
+			"lo1": 104.066679,
+            "la1": 30.657432, 
+            "lo2": 107.066679, 
+            "la2": 32.657432, 
+			"ny": 2, 
+            "nx": 3, 
+            "dy": 1, 
+            "dx": 1
+        }, 
+        "data": [0, -2, -3, 2.6, 3.8, 0]
+    }, 
+    {
+        "header": {
+            "parameterCategory": 2, 
+            "parameterNumber": 3
+        }, 
+        "data": [-3, 0, 0, 0, 0, 2]
+    }
+]

@@ -1,0 +1,31 @@
+.contextmenu ul{
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	border: 1px solid rgba(0, 0, 0, .15);
+    box-sizing: border-box;
+    border-radius: 4px;
+	background-color: #fff;
+	margin-top:10px;
+	padding: 5px 0;
+	font-size: 14px;
+}
+
+.contextmenu ul li{
+	height: 30px;
+	width: 80px;
+    line-height: 30px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.contextmenu ul li:hover, .contextmenu ul li:active{
+	background-color: #343a40;
+	color: #FFFFFF;
+}
+
+.contextmenu ul li a{
+	text-decoration: none;
+	color: black;
+}

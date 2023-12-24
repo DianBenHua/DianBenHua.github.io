@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+		<title>天地图-按比例显示所有标注</title>
+		<link rel="stylesheet" type="text/css" href="../css/common.css"></link>
+	</head>
+	<body>
+		<!--地图容器-->
+		<div id="mapDiv" style="height: 450px;margin: 2%;"></div>
+	</body>
+	<script type="text/javascript" src="../js/jquery-1.8.3.min.js"></script>
+	<script type="text/javascript" src="http://api.tianditu.gov.cn/api?v=4.0&tk=e83d04f3e04272b8d9e91615e309fe36"></script>
+	<script>
+		var map;
+		var zoom = 12;// 默认缩放级别
+		var lnglats = [
+			{"lng":"113.307444","lat":"23.189068"},
+			{"lng":"113.292352","lat":"23.176045"},
+			{"lng":"113.28416","lat":"23.187872"},
+			{"lng":"113.326847","lat":"23.187341"},
+			{"lng":"106.598378","lat":"30.456976"}
+		];
+		
+		$(document).ready(function (){
+			//获取所有经纬度中的最大、最小经纬度值
+			var maxMinLnglat = commonUtils.getMaxMinLnglat(lnglats);
+			//获取最大、最小经纬度的中间经纬度
+			var middleLnglat = commonUtils.getMiddleLnglat(maxMinLnglat);
+			//通过最大最小经纬度获取地图缩放级别
+			zoom = commonUtils.getZoom(maxMinLnglat.maxLnglat[0], maxMinLnglat.maxLnglat[1], maxMinLnglat.minLnglat[0], maxMinLnglat.minLnglat[1]);
+		
+			//初始化地图对象
+			map=new T.Map("mapDiv");
+			//设置显示地图的中心点和级别
+			map.centerAndZoom(new T.LngLat(middleLnglat[0], middleLnglat[1]), zoom);
+			//允许鼠标滚轮缩放地图
+			map.enableScrollWheelZoom()
+			//创建图片对象
+			var icon = new T.Icon({
+					iconUrl: "http://api.tianditu.gov.cn/img/map/markerA.png",
+					iconSize: new T.Point(19, 27),
+					iconAnchor: new T.Point(10, 25)
+				});
+			
+			//向地图上添加自定义标注
+			$(lnglats).each(function (){
+				var marker = new T.Marker(new T.LngLat(this.lng, this.lat),{icon:icon});
+				map.addOverLay(marker);
+			});
+		});
+			
+		
+		var commonUtils = {
+			/**
+			 * 获取所有经纬度中的最大、最小经纬度值
+			 */
+			getMaxMinLnglat: function(lnglats){
+				// 获取最大、最小的经度
+				var maxLng = lnglats[0].lng, minLng=lnglats[0].lng;
+				// 获取最大最小的纬度
+				var maxLat = lnglats[0].lat, minLat = lnglats[0].lat;
+				$.each(lnglats, function(i, res) {
+					if(res.lng > maxLng) maxLng =res.lng;
+					if(res.lng < minLng) minLng =res.lng;
+					if(res.lat > maxLat) maxLat =res.lat;
+					if(res.lat < minLat) minLat =res.lat;
+				});
+				return {"maxLnglat": [maxLng, maxLat], "minLnglat": [minLng, minLat]}
+			},
+			/**
+			 * 获取最大、最小经纬度的中间经纬度
+			 * @param maxMinLnglat 最大、最小经纬度值 格式:{"maxLnglat": [113.307444, 23.189068], "minLnglat": [110.307444, 20.189068]}
+			 */
+			getMiddleLnglat: function (maxMinLnglat){
+				var maxLngLat = maxMinLnglat.maxLnglat;
+				var minLngLat = maxMinLnglat.minLnglat;
+				var cenB =(parseFloat(maxLngLat[0])+parseFloat(minLngLat[0]))/2;
+				var cenL= (parseFloat(maxLngLat[1])+parseFloat(minLngLat[1]))/2;
+				return [cenB, cenL];
+			},
+			/**
+			 * 通过最大最小经纬度获取地图缩放级别
+			 * @param maxLng 最大的经度
+			 * @param maxLat 最大的纬度
+			 * @param minLng 最小的经度
+			 * @param minLat 最小的纬度
+			 */
+			getZoom: function (maxLng, maxLat, minLng, minLat) {
+				if (maxLat == minLat && maxLng == minLng) return 13;
+				var diff = maxLat - minLat;
+				if (diff < (maxLng - minLng) * 2.1) diff = (maxLng - minLng) * 2.1;
+				diff = parseInt(10000 * diff) / 10000;
+
+				var zoomArr = new Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18);
+				var diffArr = new Array(180, 90, 45, 22.5, 11.25, 5.625, 2.8125, 1.40625, 0.70313, 0.35126, 0.17578, 0.08789, 0.04395, 0.02197, 0.010986, 0.0054931,0.00274658, 0.001373291);
+
+				for (var i = 0; i < diffArr.length; i++) {
+					if ((diff - diffArr[i]) >= 0) {
+						return zoomArr[i];
+					}
+				}
+				return 11;
+			}
+		};
+	</script>
+</html>

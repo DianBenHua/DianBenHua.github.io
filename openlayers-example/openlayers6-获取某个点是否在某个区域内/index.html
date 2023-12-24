@@ -1,0 +1,251 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="UTF-8">
+		<title>openlayers-获取某个点是否在某个区域内</title>
+		<link href="v6.3.1-dist/ol.css" rel="stylesheet" type="text/css" />
+		<style>
+			#mapDiv{
+				height: 550px;
+				margin: 1%;
+			}
+		</style>
+	</head>
+	<body>
+		<!--地图容器-->
+		<div id="mapDiv"></div>
+	</body>
+	<script src="js/jquery-1.11.2.min.js" type="text/javascript"></script>
+	<script src="v6.3.1-dist/ol.js" type="text/javascript"></script>
+	<script src="layer/layer.js" type="text/javascript"></script>
+    <script type="text/javascript">
+		var map ;
+		var vector;
+		$(document).ready(function (){
+			// 初始化地图
+			map = initMap();
+			
+			// 图形数据(下面的数据是我在其他案例中自己画出来的图形的坐标数据)
+			var graphData = {
+				"Square":[// 正方形
+					[
+						[103.96816482730104,30.63857879086304],
+						[103.96816482730104,30.98464812680054],
+						[103.62209549136354,30.98464812680054],
+						[103.62209549136354,30.63857879086304]
+					]
+				],
+				"Box":[// 长方形
+					[
+						[103.90774002261354,30.873411554534915],
+						[103.90774002261354,30.78140105648804],
+						[104.18102493472291,30.78140105648804],
+						[104.18102493472291,30.873411554534915]
+					]
+				],
+				"Star":[// 五星
+					[
+						[103.88988723941041,30.76080169125366],
+						[103.94469256741162,30.722686260765908],
+						[103.92491936991718,30.65892553084982],
+						[103.98533096499635,30.687330621917724],
+						[104.0306627781203,30.638326165615446],
+						[104.03626904519827,30.704846687171102],
+						[104.10137405581666,30.71960296078491],
+						[104.04656872781545,30.757718391272665],
+						[104.0663419253099,30.82147912118875],
+						[104.00593033023073,30.79307403012085],
+						[103.96059851710677,30.842078486423127],
+						[103.95499225002881,30.77555796486747]
+					]
+				],
+				"Polygon":[
+					[
+						[103.78558149523926,30.801249403198245],
+						[103.80343427844238,30.55817689343262],
+						[103.8981913585205,30.81360902233887],
+						[103.925657178833,30.62684144421387],
+						[103.96136274523926,30.88776673718262],
+						[103.82266035266113,30.938578504760745],
+						[103.76223554797363,30.94544495983887],
+						[103.68258466906738,30.88502015515137]
+					]
+				]
+			};
+			
+			// 加载图形数据到地图
+			loadData(map, graphData);
+			
+			
+			// 把上面图形数据转换一下格式
+			var squarePoints = [];
+			$(graphData["Square"][0]).each(function(i , data){
+				squarePoints.push({lng: data[0], lat: data[1]});
+			});
+			var boxPoints = [];
+			$(graphData["Box"][0]).each(function(i , data){
+				boxPoints.push({lng: data[0], lat: data[1]});
+			});
+			var starPoints = [];
+			$(graphData["Star"][0]).each(function(i , data){
+				starPoints.push({lng: data[0], lat: data[1]});
+			});
+			var polygonPoints = [];
+			$(graphData["Polygon"][0]).each(function(i , data){
+				polygonPoints.push({lng: data[0], lat: data[1]});
+			});
+			
+			
+			
+			// 鼠标点击事件
+			map.on("singleclick", function (e){
+				// 当前鼠标点击位置的经纬度
+				var lngLat = e.coordinate;
+				
+				var html = "";
+				// 判断是否在正方形、长方形、五星内
+				var squareFlag = IsPtInPoly(lngLat[0], lngLat[1], squarePoints);
+				if(squareFlag){
+					html += "在正方形内<br/>";
+				}
+				
+				var starFlag = IsPtInPoly(lngLat[0], lngLat[1], starPoints);
+				if(starFlag){
+					html += "在五星内<br/>";
+				}
+				
+				var boxFlag = IsPtInPoly(lngLat[0], lngLat[1], boxPoints);
+				if(boxFlag){
+					html += "在长方形内<br/>";
+				}
+				
+				var boxFlag = IsPtInPoly(lngLat[0], lngLat[1], polygonPoints);
+				if(boxFlag){
+					html += "在多边形内<br/>";
+				}
+				
+				
+				layer.alert(html);
+			});
+		});
+		
+		/* 初始化地图 */
+		function initMap (centerLngLat){
+			var TiandiMap_vec = new ol.layer.Tile({
+				title: "天地图矢量图层",
+				source: new ol.source.XYZ({
+					url: "http://t0.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=e83d04f3e04272b8d9e91615e309fe36",
+					wrapX: false
+				})
+			});
+			var TiandiMap_cva = new ol.layer.Tile({
+				title: "天地图矢量注记图层",
+				source: new ol.source.XYZ({
+					url: "http://t0.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=e83d04f3e04272b8d9e91615e309fe36",
+					wrapX: false
+				})
+			})
+		
+			//实例化Map对象加载地图
+			var map = new ol.Map({
+				//地图容器div的ID
+				target: 'mapDiv',
+				//地图容器中加载的图层
+				layers: [TiandiMap_vec, TiandiMap_cva],
+				//地图视图设置
+				view: new ol.View({
+					//地图初始中心点
+					center: [104.066677,30.657483], 
+					//地图初始显示级别
+					zoom: 10,
+					projection: "EPSG:4326"
+				})
+			});
+			return map;
+		}
+		
+		/* 加载数据 */
+		function loadData(map, graphData){
+			var features = [];
+			for(var key in graphData){
+				switch (key) {
+					case 'Square':// 正方形
+					case 'Box':// 长方形
+					case 'Star':// 五星
+					case 'Polygon':// 多边形
+						$(graphData[key]).each(function(i, value){
+							var feature = new ol.Feature({
+								geometry: new ol.geom.Polygon([value])
+							});
+							setStyle(feature, []);
+							features.push(feature);
+						});
+						break;
+				}
+			}
+			
+			//创建一个图层
+			vector = new ol.layer.Vector({
+				source: new ol.source.Vector({
+					features: features
+				})
+			});
+			//将绘制层添加到地图容器中
+			map.addLayer(vector);
+		}
+		
+		/* 设置样式 */
+		function setStyle(feature, styles){
+			styles.push(new ol.style.Style({
+				// 填充颜色 fill: new ol.style.Fill({color: 'gray'})
+				// 边框颜色
+				stroke: new ol.style.Stroke({
+					color: 'red',// 边框颜色
+					width: 2
+				}),
+				// 点形状
+				image: new ol.style.Circle({
+					radius: 7,
+					fill: new ol.style.Fill({
+						color: 'red'
+					})
+				})
+			}));
+			feature.setStyle(styles);
+		}
+		
+		/* 某个点是否在某个区域内(来处:https://blog.csdn.net/neil89/article/details/50240481) */
+		function IsPtInPoly(ALon, ALat, APoints) {
+			var iSum = 0,
+				iCount;
+			var dLon1, dLon2, dLat1, dLat2, dLon;
+			if (APoints.length < 3) return false;
+			iCount = APoints.length;
+			for (var i = 0; i < iCount; i++) {
+				if (i == iCount - 1) {
+					dLon1 = APoints[i].lng;
+					dLat1 = APoints[i].lat;
+					dLon2 = APoints[0].lng;
+					dLat2 = APoints[0].lat;
+				} else {
+					dLon1 = APoints[i].lng;
+					dLat1 = APoints[i].lat;
+					dLon2 = APoints[i + 1].lng;
+					dLat2 = APoints[i + 1].lat;
+				}
+				//以下语句判断A点是否在边的两端点的水平平行线之间，在则可能有交点，开始判断交点是否在左射线上
+				if (((ALat >= dLat1) && (ALat < dLat2)) || ((ALat >= dLat2) && (ALat < dLat1))) {
+					if (Math.abs(dLat1 - dLat2) > 0) {
+						//得到 A点向左射线与边的交点的x坐标：
+						dLon = dLon1 - ((dLon1 - dLon2) * (dLat1 - ALat)) / (dLat1 - dLat2);
+						if (dLon < ALon)
+							iSum++;
+					}
+				}
+			}
+			if (iSum % 2 != 0)
+				return true;
+			return false;
+		}
+    </script>
+</html>

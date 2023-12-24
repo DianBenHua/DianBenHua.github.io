@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>高德地图坐标转换成天地图坐标</title>
+    <link href="v3.19.1-dist/ol.css" rel="stylesheet" type="text/css" />
+    
+</head>
+<body>
+    <!--地图容器-->
+	<div id="mapDiv" style="height: 550px;margin: 2%;"></div>
+	
+	<!-- 
+		说明:
+			高德地图使用的坐标系为:GCJ-02
+			天地图使用的坐标系为:CGCS2000
+			GCJ-02  >  CGCS2000
+	-->
+	<script src="js/jquery-1.11.2.min.js" type="text/javascript"></script>
+	<script src="v3.19.1-dist/ol-debug.js" type="text/javascript"></script>
+	<!-- 地理坐标系转换工具，支持WGS84/GCJ02/BD09等常用坐标系互转 -->
+	<script src="js/gcoord.js" type="text/javascript"></script>
+    <script type="text/javascript">
+		$(document).ready(function (){
+			// 下面坐标是在https://lbs.amap.com/api/javascript-api/example/map/click-to-get-lnglat/中获取的
+			var cgcs2000LngLat = gcoord.transform(
+				[116.397453,39.909162],    // 经纬度坐标(天安门)
+				gcoord.GCJ02,               // 当前坐标系
+				gcoord.WGS84               // 目标坐标系
+			);
+			
+			// 初始化地图
+			initMap(cgcs2000LngLat);
+		});
+		
+		/* 初始化地图 */
+		function initMap (centerLngLat){
+			var TiandiMap_vec = new ol.layer.Tile({
+				title: "天地图矢量图层",
+				source: new ol.source.XYZ({
+					url: "http://t0.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=e83d04f3e04272b8d9e91615e309fe36",
+					wrapX: false
+				})
+			});
+			var TiandiMap_cva = new ol.layer.Tile({
+				title: "天地图矢量注记图层",
+				source: new ol.source.XYZ({
+					url: "http://t0.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=e83d04f3e04272b8d9e91615e309fe36",
+					wrapX: false
+				})
+			})
+		
+			//实例化Map对象加载地图
+			var map = new ol.Map({
+				//地图容器div的ID
+				target: 'mapDiv',
+				//地图容器中加载的图层
+				layers: [TiandiMap_vec, TiandiMap_cva],
+				//地图视图设置
+				view: new ol.View({
+					//地图初始中心点
+					center: centerLngLat, 
+					//地图初始显示级别
+					zoom: 18,
+					projection: "EPSG:4326"
+				})
+			});
+			
+			
+			//创建一个点
+			var point = new ol.Feature({
+				geometry: new ol.geom.Point(centerLngLat)
+			});
+			//设置点1的样式信息
+			point.setStyle(new ol.style.Style({
+				//填充色
+				fill: new ol.style.Fill({
+					color: 'rgba(255, 255, 255, 0.2)'
+				}),
+				//边线颜色
+				stroke: new ol.style.Stroke({
+					color: '#ffcc33',
+					width: 2
+				}),
+				//形状
+				image: new ol.style.Circle({
+					radius: 17,
+					fill: new ol.style.Fill({
+						color: '#ffcc33'
+					})
+				})
+			}));
+
+			//实例化一个矢量图层Vector作为绘制层
+			var source = new ol.source.Vector({
+				features: [point]
+			});
+			//创建一个图层
+			var vector = new ol.layer.Vector({
+				source: source
+			});
+			//将绘制层添加到地图容器中
+			map.addLayer(vector);
+		}
+    </script>
+</body>
+</html>

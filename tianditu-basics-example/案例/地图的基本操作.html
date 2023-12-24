@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>天地图-基本地图</title>
+		<link rel="stylesheet" type="text/css" href="../css/common.css"></link>
+    </head>
+    <body> 
+        <!--地图容器-->
+        <div id="mapDiv" style="height: 550px;margin: 2%;"></div>
+        
+        <div class="content" align="center">
+			<a class="button" href="javascript:void(0);" id="button1">放大地图</a>
+			<a class="button" href="javascript:void(0);" id="button2">缩小地图</a>
+			<a class="button" href="javascript:void(0);" id="button3">向右移动</a>
+			<a class="button" href="javascript:void(0);" id="button4">向左移动</a>
+			<a class="button" href="javascript:void(0);" id="button5">向上移动</a>
+			<a class="button" href="javascript:void(0);" id="button6">向下移动</a>
+			<a class="button" href="javascript:void(0);" id="button7">获取地图范围</a>
+			<a class="button" href="javascript:void(0);" id="button8">获取地图中心点坐标</a>
+        </div>
+		
+		<div class="content" align="center">
+			<a class="button" href="javascript:void(0);" id="button9">获取地图缩放级别</a>
+			<a class="button" href="javascript:void(0);" id="button10">获取地图投影类型</a>
+			<a class="button" href="javascript:void(0);" id="button11">搜索</a>
+        </div>
+    </body>
+    <script type="text/javascript" src="../js/jquery-1.8.3.min.js"></script>
+	<script type="text/javascript" src="../layer/layer.js"></script>
+    <script type="text/javascript" src="http://api.tianditu.gov.cn/api?v=4.0&tk=e83d04f3e04272b8d9e91615e309fe36"></script>
+    <script type="text/javascript">
+        var map;
+        var zoom = 12;
+        var lng = 116.40969;
+        var lat = 39.89945;
+        var i = 1;
+		$(document).ready(function (){
+			map = new T.Map("mapDiv");
+            map.centerAndZoom(new T.LngLat(lng, lat), zoom);
+		});
+        
+        /*放大地图*/
+        $("#button1").click(function(){
+            map.zoomIn();
+        });
+        
+        /*缩小地图*/
+        $("#button2").click(function(){
+            map.zoomOut();
+        });
+        
+        /*向右移动*/
+        $("#button3").click(function(){
+            map.panTo(new T.LngLat(lng+i,lat)); 
+            i++;
+        });
+        
+        /*向左移动*/
+        $("#button4").click(function(){
+            map.panTo(new T.LngLat(lng-i,lat)); 
+            i++;
+        });
+        
+        /*向上移动*/
+        $("#button5").click(function(){
+            map.panTo(new T.LngLat(lng,lat+i)); 
+            i++;
+        });
+        
+        /*向下移动*/
+        $("#button6").click(function(){
+            map.panTo(new T.LngLat(lng,lat-i)); 
+            i++;
+        });
+        
+        
+        /*获取可视化区域*/
+		$("#button7").click(function(){
+		   //获取可视区域
+            var bs = map.getBounds();
+            //可视区域左下角
+            var bssw = bs.getSouthWest();
+            //可视区域右上角
+            var bsne = bs.getNorthEast(); 
+			layer.msg("当前地图可视范围是：" + bssw.lng + "," + bssw.lat + "到" + bsne.lng + "," + bsne.lat);
+        });
+		
+		/*获取地图中心点坐标*/
+		$("#button8").click(function(){
+			layer.msg("当前地图中心点：" + map.getCenter().getLng() + "," + map.getCenter().getLat());
+		});
+		
+		/*获取地图缩放级别*/
+		$("#button9").click(function(){
+			layer.msg("当前地图缩放级别：" + map.getZoom());
+		});
+		
+		/*获取地图投影类型*/
+		$("#button10").click(function(){
+			layer.msg("地图投影类型信息是："+map.getCode())
+		});
+		
+		/*搜索*/
+		$("#button11").click(function (){
+			layer.prompt({title: '输入地址，并确认', formType: 0}, function(adress, index){
+				layer.close(index);
+				
+				map.clearOverLays();
+				var geocoder = new T.Geocoder();
+				
+				geocoder.getPoint(adress, function(result){
+					if(result.getStatus() == 0){
+						map.panTo(result.getLocationPoint(), 16);
+						//创建标注对象
+						var marker = new T.Marker(result.getLocationPoint());
+						//向地图上添加标注
+						map.addOverLay(marker);
+						marker.addEventListener("click", function(e){
+							layer.alert(JSON.stringify(e.lnglat));
+						});
+					}else{
+						alert(result.getMsg());
+					}
+					
+				});
+			});
+		});
+    </script>
+</html>
