@@ -8,17 +8,41 @@
 	</head>
 	<body>
 		<!--地图容器-->
-		<div id="mapDiv" style="height: 550px; margin: 1%;"></div>
+		<div id="mapCon" style="height: 550px; margin: 1%;"></div>
 	</body>
 	<script src="../../common/js/jquery-1.11.2.min.js" type="text/javascript"></script>
 	<script src="../../common/openlayers/v6.3.1-dist/ol.js" type="text/javascript"></script>
 	<script src="../../common/layer/layer.js" type="text/javascript"></script>
     <script type="text/javascript">
 		var map ;
-		var vector;
+
 		$(document).ready(function (){
-			// 初始化地图
-			map = initMap();
+			// 初始化天地图图层
+			var TiandiMap_vec = new ol.layer.Tile({
+				title: "天地图矢量图层",
+				source: new ol.source.XYZ({
+					url: "http://t0.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=e83d04f3e04272b8d9e91615e309fe36",
+					wrapX: false
+				})
+			});
+			var TiandiMap_cva = new ol.layer.Tile({
+				title: "天地图矢量注记图层",
+				source: new ol.source.XYZ({
+					url: "http://t0.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=e83d04f3e04272b8d9e91615e309fe36",
+					wrapX: false
+				})
+			})
+		
+			// 初始化地图容器
+			map = new ol.Map({
+				target: 'mapCon',
+				layers: [TiandiMap_vec, TiandiMap_cva],
+				view: new ol.View({
+					center: [104.066677,30.657483], // 地图中心点(天地图里面的经纬度)
+					zoom: 10,
+					projection: "EPSG:4326"
+				})
+			});
 			
 			// 图形数据(下面的数据是我在其他案例中自己画出来的图形的坐标数据)
 			var graphData = {
@@ -124,41 +148,6 @@
 			});
 		});
 		
-		/* 初始化地图 */
-		function initMap (centerLngLat){
-			var TiandiMap_vec = new ol.layer.Tile({
-				title: "天地图矢量图层",
-				source: new ol.source.XYZ({
-					url: "http://t0.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=e83d04f3e04272b8d9e91615e309fe36",
-					wrapX: false
-				})
-			});
-			var TiandiMap_cva = new ol.layer.Tile({
-				title: "天地图矢量注记图层",
-				source: new ol.source.XYZ({
-					url: "http://t0.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=e83d04f3e04272b8d9e91615e309fe36",
-					wrapX: false
-				})
-			})
-		
-			//实例化Map对象加载地图
-			var map = new ol.Map({
-				//地图容器div的ID
-				target: 'mapDiv',
-				//地图容器中加载的图层
-				layers: [TiandiMap_vec, TiandiMap_cva],
-				//地图视图设置
-				view: new ol.View({
-					//地图初始中心点
-					center: [104.066677,30.657483], 
-					//地图初始显示级别
-					zoom: 10,
-					projection: "EPSG:4326"
-				})
-			});
-			return map;
-		}
-		
 		/* 加载数据 */
 		function loadData(map, graphData){
 			var features = [];
@@ -180,7 +169,7 @@
 			}
 			
 			//创建一个图层
-			vector = new ol.layer.Vector({
+			var vector = new ol.layer.Vector({
 				source: new ol.source.Vector({
 					features: features
 				})
