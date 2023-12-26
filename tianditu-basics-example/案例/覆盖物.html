@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>天地图-覆盖物</title>
+		<link rel="stylesheet" type="text/css" href="../css/common.css"></link>
+    </head>
+    <body> 
+        <!--地图容器-->
+		<div id="mapDiv" style="height: 450px;margin: 2%;"></div>
+		
+		<div class="content" align="center">
+			<a class="button" href="javascript:void()" id="button1">显示标注</a>
+			<a class="button" href="javascript:void()" id="button2">显示线</a>
+			<a class="button" href="javascript:void()" id="button3">显示面</a>
+			<a class="button" href="javascript:void()" id="button4">显示中空面</a>
+			<a class="button" href="javascript:void()" id="button5">显示矩形</a>
+			<a class="button" href="javascript:void()" id="button6">显示圆形</a>
+			<a class="button" href="javascript:void()" id="button7">显示信息窗口</a>
+			<a class="button" href="javascript:void()" id="button8">显示标注标签</a>
+        </div><br/>
+		
+		<div class="content" align="center">
+			<a class="button" href="javascript:void()" id="button9">为标注绑定点击打开信息窗口</a>
+			<a class="button" href="javascript:void()" id="button10">获取信息窗口的内容</a>
+        </div>
+        
+    </body>
+	<script type="text/javascript" src="../../common/js/jquery-1.11.2.min.js"></script>
+	<script type="text/javascript" src="../../common/layer/layer.js"></script>
+    <script type="text/javascript" src="http://api.tianditu.gov.cn/api?v=4.0&tk=e83d04f3e04272b8d9e91615e309fe36"></script>
+    <script type="text/javascript">
+        var map;
+        var zoom = 10;
+        var infoWin;
+		$(document).ready(function (){
+			map = new T.Map("mapDiv");
+            map.centerAndZoom(new T.LngLat(116.40969, 39.89945), zoom);
+            //使用卫星和路网的混合视图 （其他视图都可以)
+            map.addControl(TMAP_HYBRID_MAP);
+		});
+        
+        //显示标注
+        $("#button1").click(function (){
+			//清除覆盖物
+            map.clearOverLays();
+            //创建标注对象
+            var marker = new T.Marker(new T.LngLat(116.411794, 39.9068));
+            //向地图上添加标注
+            map.addOverLay(marker);
+		
+		});
+		
+		
+        //显示线
+        $("#button2").click(function (){
+            //清除覆盖物
+            map.clearOverLays();
+            points = [];
+            points.push(new T.LngLat(116.41136, 39.97569));
+            points.push(new T.LngLat(116.32969, 39.92940));
+            points.push(new T.LngLat(116.385438, 39.90610));
+            var line = new T.Polyline(points);
+            line.setColor("red");
+            map.addOverLay(line);
+        });
+		
+		
+        //显示多边形
+        $("#button3").click(function (){
+            //清除覆盖物
+            map.clearOverLays();
+            var points = [];
+            points.push(new T.LngLat(116.41136, 39.97569));
+            points.push(new T.LngLat(116.411794, 39.9068));
+            points.push(new T.LngLat(116.32969, 39.92940));
+            points.push(new T.LngLat(116.385438, 39.90610));
+            var polygon = new T.Polygon(points,{ color: "blue",weight: 3, opacity: 0.5,  fillColor: "#FFFFFF", fillOpacity: 0.5});
+            //向地图上添加面
+            map.addOverLay(polygon);
+        });
+		
+		
+        //显示带洞多边形
+        $("#button4").click(function (){
+            //清除覆盖物
+            map.clearOverLays();
+            var points = [];
+            points.push(new T.LngLat(116.315000,39.964750));
+            points.push(new T.LngLat(116.303330,39.960810));
+            points.push(new T.LngLat(116.306760,39.866270));
+            points.push(new T.LngLat(116.328740,39.847560));
+            points.push(new T.LngLat(116.366500,39.855730));
+            points.push(new T.LngLat(116.442380,39.856520));
+            points.push(new T.LngLat(116.455080,39.865480));
+            points.push(new T.LngLat(116.456110,39.950020));
+            points.push(new T.LngLat(116.428990,39.967390));
+            var points1 = [];
+            points1.push(new T.LngLat(116.349330,39.941590));
+            points1.push(new T.LngLat(116.350620,39.900650));
+            points1.push(new T.LngLat(116.353110,39.898670));
+            points1.push(new T.LngLat(116.413880,39.899990));
+            points1.push(new T.LngLat(116.418340,39.903150));
+            points1.push(new T.LngLat(116.429330,39.903940));
+            points1.push(new T.LngLat(116.427270,39.947910));
+            points1.push(new T.LngLat(116.365810,39.946600));
+            //创建面对象
+            var polygon = new T.Polygon([points,points1],{
+                color: "black", weight: 3, opacity: 0.2, fillColor: "blue", fillOpacity: 0.5
+            });
+            //向地图上添加面
+            map.addOverLay(polygon);
+        });
+		
+        
+        //显示矩形
+        $("#button5").click(function (){
+            //清除覆盖物
+            map.clearOverLays();
+            var bounds = new T.LngLatBounds(new T.LngLat(116.36231, 39.87784),new T.LngLat( 116.43954, 39.92841));
+            var rect = new T.Rectangle(bounds );
+            //向地图上添加矩形
+            map.addOverLay(rect);
+        });
+		
+        
+        //显示圆形
+        $("#button6").click(function (){
+            //清除覆盖物
+            map.clearOverLays();
+            
+            var circle = new T.Circle(new T.LngLat(116.40093, 39.90313), 5000,{color:"blue",weight:5,opacity:0.5,fillColor:"#FFFFFF",fillOpacity:0.5,lineStyle:"solid"});
+            //向地图上添加圆
+            map.addOverLay(circle);
+        });
+        
+        
+        //显示信息窗口
+        $("#button7").click(function (){
+            //清除覆盖物
+            map.clearOverLays();
+            
+            var lnglat = new T.LngLat(116.40969, 39.94940);
+            //创建信息窗口对象
+               infoWin = new T.InfoWindow();
+            infoWin.setLngLat(lnglat);
+            //设置信息窗口要显示的内容
+            infoWin.setContent("添加的信息窗口");
+            //向地图上添加信息窗口
+            map.addOverLay(infoWin);
+        });
+		
+       
+		//显示标注文字标签
+		$("#button8").click(function (){
+			//清除覆盖物
+            map.clearOverLays();
+			marker = new T.Marker( new T.LngLat(116.40969, 39.94940));
+			// 创建标注
+            map.addOverLay(marker);
+                label = new T.Label({
+                text: "<b>文字标注!!!<b>",
+                position: marker.getLngLat(),
+                offset: new T.Point(3, -30)
+            });
+            map.addOverLay(label);
+		});
+		   
+       
+        //标注上显示信息窗口
+		$("#button9").click(function (){
+            map.clearOverLays();
+			marker = new T.Marker( new T.LngLat(116.40969, 39.94940));
+			// 创建标注
+            map.addOverLay(marker);
+            //创建信息窗口对象
+            infoWin = new T.InfoWindow();
+            var info = "我要在标注上显示的内容<br/>可以是html片段<br/>也可以是纯文本";
+            infoWin.setContent(info);
+            //为标注注册点击事件
+            marker.addEventListener("click", function () {
+                marker.openInfoWindow(infoWin);
+            });
+		});
+		
+		   
+		//标注上显示信息窗口
+		$("#button10").click(function (){
+			try{
+				var info = infoWin.getContent();
+				layer.msg(info);
+			}catch(e){
+				layer.msg("请先为标注绑定点击打开信息窗口事件")
+			}
+		});
+    </script>
+</html>
