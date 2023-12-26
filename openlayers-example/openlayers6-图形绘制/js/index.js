@@ -3,22 +3,45 @@ var map, plotDraw, plotEdit, drawOverlay, drawStyle;
 var drawStrokeColor = "red", drawFillColor = "rgba(0,0,0,0)";
 
 $(document).ready(function (){
-    var TiandiMap_vec = new ol.layer.Tile({
-        title: "天地图矢量图层",
-        source: new ol.source.XYZ({
-            url: "http://t0.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=e83d04f3e04272b8d9e91615e309fe36",
-            wrapX: false,
-			//crossOrigin: "Anonymous"
-        })
-    });
-    var TiandiMap_cva = new ol.layer.Tile({
-        title: "天地图矢量注记图层",
-        source: new ol.source.XYZ({
-            url: "http://t0.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=e83d04f3e04272b8d9e91615e309fe36",
-            wrapX: false,
-			//crossOrigin: "Anonymous"
-        })
-    })
+    // 初始化天地图图层
+	var projection = ol.proj.get("EPSG:4326");
+	var projectionExtent = projection.getExtent();
+	var size = ol.extent.getWidth(projectionExtent) / 256;
+	var resolutions = [];
+	for (var z = 2; z < 19; ++z) {
+		resolutions[z] = size / Math.pow(2, z);
+	}
+	var TiandiMap_vec = new ol.layer.Tile({
+			source: new ol.source.WMTS({
+			url: "http://t{0-6}.tianditu.gov.cn/vec_c/wmts?tk=e83d04f3e04272b8d9e91615e309fe36",
+			layer: "vec",
+			style: "default",
+			matrixSet: "c",
+			format: "tiles",
+			wrapX: true,
+			tileGrid: new ol.tilegrid.WMTS({
+				origin: ol.extent.getTopLeft(projectionExtent),
+				//resolutions: res.slice(0, 15),
+				resolutions: resolutions,
+				matrixIds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+			})
+		}),
+	});
+	var TiandiMap_cva = new ol.layer.Tile({
+			source: new ol.source.WMTS({
+			url: "http://t{0-6}.tianditu.gov.cn/cva_c/wmts?tk=e83d04f3e04272b8d9e91615e309fe36",
+			layer: "cva",
+			style: "default",
+			matrixSet: "c",
+			format: "tiles",
+			wrapX: true,
+			tileGrid: new ol.tilegrid.WMTS({
+				origin: ol.extent.getTopLeft(projectionExtent),
+				resolutions: resolutions,
+				matrixIds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+			})
+		}),
+	});
 
     // 实例化Map对象加载地图
     map = new ol.Map({

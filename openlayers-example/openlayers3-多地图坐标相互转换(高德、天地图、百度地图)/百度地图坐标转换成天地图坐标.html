@@ -2,8 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>百度地图坐标转换成天地图坐标</title>
-    <link href="v3.19.1-dist/ol.css" rel="stylesheet" type="text/css" />
-    
+    <link href="../../common/openlayers/v3.19.1-dist/ol.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
     <!--地图容器-->
@@ -15,10 +14,10 @@
 			天地图使用的坐标系为:CGCS2000
 			BD-09  >  CGCS2000(实际是转成WGS84、WGS84≈CGCS2000)	
 	-->
-	<script src="js/jquery-1.11.2.min.js" type="text/javascript"></script>
-	<script src="v3.19.1-dist/ol-debug.js" type="text/javascript"></script>
+	<script src="../../common/js/jquery-1.11.2.min.js" type="text/javascript"></script>
+	<script src="../../common/openlayers/v3.19.1-dist/ol-debug.js" type="text/javascript"></script>
 	<!-- 地理坐标系转换工具，支持WGS84/GCJ02/BD09等常用坐标系互转 -->
-	<script src="js/gcoord.js" type="text/javascript"></script>
+	<script src="../../common/js/gcoord.js" type="text/javascript"></script>
     <script type="text/javascript">
 		$(document).ready(function (){
 			// 下面坐标是在http://api.map.baidu.com/lbsapi/getpoint/index.html中获取的
