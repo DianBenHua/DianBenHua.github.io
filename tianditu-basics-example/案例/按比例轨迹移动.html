@@ -20,8 +20,8 @@
     <script type="text/javascript" src="../../common/js/jquery-1.11.2.min.js"></script>
 	<script type="text/javascript" src="../../common/layer/layer.js"></script>
     <script src="http://cdn.bootcss.com/d3/3.5.17/d3.js " charset="utf-8"></script>
-    <script src="http://lbs.tianditu.gov.cn/api/js4.0/opensource/openlibrary/D3SvgOverlay.js"></script>
-	<!-- CarTrack.js中第94行是自己添加上去的 -->
+    <script src="../js/D3SvgOverlay.js"></script>
+	<!-- CarTrack.js中第94行是自己添加上去的 127行的汽车图片是自己修改的本地图片 -->
     <script src="../js/CarTrack.js"></script>
     <script type="text/javascript">
         var map;
@@ -45,8 +45,8 @@
 		
 		
         var _CarTrack;
-        var startIcon = "http://lbs.tianditu.gov.cn/images/bus/start.png";    //起点图标
-        var endIcon = "http://lbs.tianditu.gov.cn/images/bus/end.png";        //终点图标
+        var startIcon = "../img/start.png";    //起点图标
+        var endIcon = "../img/end.png";        //终点图标
         function onLoad(middleLnglat, zoom) {
             map = new T.Map('mapDiv');
             map.centerAndZoom(new T.LngLat(middleLnglat[0], middleLnglat[1]), zoom);

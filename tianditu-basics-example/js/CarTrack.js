@@ -124,7 +124,7 @@ T.CarTrack.prototype = {
         interval: 1000,
         carstyle: {
             display: true,
-            iconUrl: "http://lbs.tianditu.gov.cn/images/openlibrary/car.png",
+            iconUrl: "../img/car.png",
             width: 52,
             height: 26
         },
